@@ -1,27 +1,33 @@
 #!/usr/bin/python3
-"""
-    Sript that starts a Flask web application
-"""
+'''A simple Flask web application.
+'''
 from flask import Flask, render_template
+
 from models import storage
+from models.state import State
+
+
 app = Flask(__name__)
+'''The Flask application instance.'''
+app.url_map.strict_slashes = False
+
+
+@app.route('/states_list')
+def states_list():
+    '''The states_list page.'''
+    all_states = list(storage.all(State).values())
+    all_states.sort(key=lambda x: x.name)
+    ctxt = {
+        'states': all_states
+    }
+    return render_template('7-states_list.html', **ctxt)
 
 
 @app.teardown_appcontext
-def handle_teardown(self):
-    """
-        method to handle teardown
-    """
+def flask_teardown(exc):
+    '''The Flask app/request context end event listener.'''
     storage.close()
 
 
-@app.route('/states_list', strict_slashes=False)
-def state_list():
-    """
-        method to render states
-    """
-    states = storage.all('State').values()
-    return render_template("7-states_list.html", states=states)
-
 if __name__ == '__main__':
-        app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port='5000')
